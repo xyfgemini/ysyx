@@ -23,6 +23,7 @@ static int is_batch_mode = false;
 
 void init_regex();
 void init_wp_pool();
+void isa_reg_display();
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 static char* rl_gets() {
@@ -49,10 +50,38 @@ static int cmd_c(char *args) {
 
 
 static int cmd_q(char *args) {
+  nemu_state.state = NEMU_STOP;
   return -1;
 }
 
+static int cmd_si(char *args) {
+  int char_2_int = 0;
+  char* step = NULL;
+  step = strtok(args," ");
+  if(step == NULL) {
+    cpu_exec(1);
+  }else{
+    sscanf(step,"%d",&char_2_int);
+    cpu_exec(char_2_int);
+  }
+  return 0;
+}
+
+static int cmd_info(char *args){
+  char* object = NULL;
+  object = strtok(args," ");
+  if(object == NULL){
+      printf("please give the specific information!\n");
+  }else if(strcmp(object,"r")==0){
+      isa_reg_display();
+  }else{
+      
+  }
+  return 0;
+}
+
 static int cmd_help(char *args);
+
 
 static struct {
   const char *name;
@@ -62,8 +91,8 @@ static struct {
   { "help", "Display information about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
-
-  /* TODO: Add more commands */
+  { "si","ingle step",cmd_si},
+  { "info","info reg/watchpoints",cmd_info},  
 
 };
 

@@ -32,7 +32,6 @@ static void welcome() {
   Log("Build time: %s, %s", __TIME__, __DATE__);
   printf("Welcome to %s-NEMU!\n", ANSI_FMT(str(__GUEST_ISA__), ANSI_FG_YELLOW ANSI_BG_RED));
   printf("For help, type \"help\"\n");
-  Log("Exercise: Please remove me in the source code and compile NEMU again.");
 }
 
 #ifndef CONFIG_TARGET_AM
@@ -68,16 +67,26 @@ static long load_img() {
 }
 
 static int parse_args(int argc, char *argv[]) {
+  
   const struct option table[] = {
-    {"batch"    , no_argument      , NULL, 'b'},
-    {"log"      , required_argument, NULL, 'l'},
+    {"batch"    , no_argument      , NULL, 'b'}, //no:0 required:1 optional:2
+    {"log"      , required_argument, NULL, 'l'}, //return value--->flag==NULL ? val : 0
     {"diff"     , required_argument, NULL, 'd'},
     {"port"     , required_argument, NULL, 'p'},
     {"help"     , no_argument      , NULL, 'h'},
     {0          , 0                , NULL,  0 },
   };
   int o;
-  while ( (o = getopt_long(argc, argv, "-bhl:d:p:", table, NULL)) != -1) {
+/**  int getopt_long(int argc, char * const argv[],
+                  const char *optstring,
+                  const struct option *longopts, int *longindex);
+  *  argc:命令行参数的个数 
+  *  argv:命令行参数的具体内容
+  *  "-bhl:d:p:",短选项（-字母），:表示必须带有参数
+  *  table: 长选项（--字母）
+  *  参数赋值给optargs，int *longindex = NULL;
+  **/
+  while ( (o = getopt_long(argc, argv, "-bhl:d:p:", table, NULL)) != -1) { //-1结束标志
     switch (o) {
       case 'b': sdb_set_batch_mode(); break;
       case 'p': sscanf(optarg, "%d", &difftest_port); break;
