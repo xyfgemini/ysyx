@@ -25,11 +25,21 @@ const char *regs[] = {
 
 void isa_reg_display() {
     int len = sizeof(regs)/sizeof(regs[0]);
+    printf("$pc-0x%08x\n",cpu.pc);
     for(int i=0;i<len;i++) {
           printf("$%s-0x%08x\n",regs[i],cpu.gpr[i]);
     }
+   
 }
 
 word_t isa_reg_str2val(const char *s, bool *success) {
+  for(int i=0;i<sizeof(regs)/sizeof(regs[0]);i++){
+    if(strcmp(s+1,regs[i])==0){
+      return cpu.gpr[i];
+    }
+    else if(strcmp(s+1,"pc")==0){
+      return cpu.pc;
+    }
+  }
   return 0;
 }
