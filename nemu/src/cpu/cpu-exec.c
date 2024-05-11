@@ -31,10 +31,19 @@ static uint64_t g_timer = 0; // unit: us
 static bool g_print_step = false;
 
 void device_update();
+bool inspect_watchpoint();
+
 
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
   if (ITRACE_COND) { log_write("%s\n", _this->logbuf); }
+#endif
+
+#ifdef CONFIG_WATCHPOINT
+  if(inspect_watchpoint()){
+      nemu_state.state = NEMU_STOP;
+      printf("the guest has triggered the watchpoint\n");
+  }
 #endif
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
@@ -97,6 +106,7 @@ void assert_fail_msg() {
 }
 
 /* Simulate how the CPU works. */
+//parameter -1(11....)-->uint64_t(2^64-1)
 void cpu_exec(uint64_t n) {
   g_print_step = (n < MAX_INST_TO_PRINT);
   switch (nemu_state.state) {
