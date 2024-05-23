@@ -21,9 +21,11 @@
 
 static int is_batch_mode = false;
 
+//function declaration
 void init_regex();
 void init_wp_pool();
 void isa_reg_display();
+word_t paddr_read(paddr_t addr, int len);
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 static char* rl_gets() {
@@ -60,7 +62,8 @@ static int cmd_si(char *args) {
   step = strtok(args," ");
   if(step == NULL) {
     cpu_exec(1);
-  }else{
+  }
+  else{
     sscanf(step,"%d",&char_2_int);
     cpu_exec(char_2_int);
   }
@@ -68,15 +71,65 @@ static int cmd_si(char *args) {
 }
 
 static int cmd_info(char *args){
-  char* object = NULL;
-  object = strtok(args," ");
-  if(object == NULL){
+  char* delim = " ";
+  char* s = NULL;
+  s = strtok(args,delim);
+  // printf("%s\n",s);
+  // s = strtok(NULL,delim);
+  if(s==NULL){
       printf("please give the specific information!\n");
-  }else if(strcmp(object,"r")==0){
-      isa_reg_display();
-  }else{
-      
   }
+  else if(strcmp(s,"r")==0){
+      isa_reg_display();
+  }
+  else if(strcmp(s,"w")==0){
+      display_watchpoint();
+  }
+  else{
+      printf("invalid!\n");
+  }
+  return 0;
+}
+
+static int cmd_x(char *args){
+    char* token1 = NULL;
+    char* token2 = NULL;
+    char* delim = " ";
+    int token1_2_int = 0;
+    word_t token2_2_hex=0;
+    bool* success = false;
+    token1 = strtok(args,delim);
+    token2 = strtok(NULL,delim);
+    sscanf(token1,"%d",&token1_2_int);
+    token2_2_hex = expr(token2,success);
+    // sscanf(token2,"0x%8x",&token2_2_hex);
+    for(int i=0;i<token1_2_int;i++){
+      printf("addr=0x%8x,data=%u\n",token2_2_hex,paddr_read(token2_2_hex,4)); //uint32_t paddr_t word_t
+      token2_2_hex += 0x00000020;
+    }
+    return 0;
+}
+
+static int cmd_p(char *args){
+  bool success = false; //learning
+  word_t result = expr(args,&success);
+  printf("the result of \"%s\" is \"%u\"\n",args,result);
+  return 0;
+}
+
+static int cmd_w(char *args){
+  if(new_bp(args)){
+    printf("breakpoint\n");
+    return 0;
+  }
+  else{
+    new_wp(args);
+  }
+  return 0;
+}
+
+static int cmd_d(char *args){
+  free_wp(args);
   return 0;
 }
 
@@ -92,8 +145,11 @@ static struct {
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
   { "si","ingle step",cmd_si},
-  { "info","info reg/watchpoints",cmd_info},  
-
+  { "info","print thr information of registers and watchpoints",cmd_info},  
+  { "x","print the data sotred in the memory",cmd_x},
+  { "p","print the result of the expressions",cmd_p},
+  { "w","set new watchpoints",cmd_w},
+  { "d","delete the watchpoints",cmd_d},
 };
 
 #define NR_CMD ARRLEN(cmd_table)
