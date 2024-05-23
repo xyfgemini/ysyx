@@ -31,8 +31,51 @@ static char *code_format =
 "  return 0; "
 "}";
 
-static void gen_rand_expr() {
-  buf[0] = '\0';
+uint32_t choose(uint32_t n){
+  uint32_t a = 0;
+  srand(unsigned(time(NULL)));
+  a = rand() % n;
+  return a;
+}
+
+void gen_num(){
+  uint32_t a = 0;
+  srand(unsigned(time(NULL)));
+  a = rand() % 100 + 1;
+  strcat(buf,a);
+}
+
+void gen_rand_op(){
+  int index = 0;
+  char a[]={'+','-','*','/'};
+  srand(unsigned(time(NULL)));
+  index = choose(4);
+  strcat(buf,a[index]);
+}
+
+void gen(int parentheses){
+  char pt[]={'(',')'};
+  switch(parentheses){
+    case '(':strcat(buf,'(');
+    case ')':strcat(buf,')');
+    default:assert(0);break;
+  }
+}
+
+void gen_rand_blank(){
+  srand(time(0));
+  if (rand() % 2 == 0){
+    strcat(buf,' ');
+  }
+}
+
+//设置递归深度,buf不会溢出
+static void gen_rand_expr(int depth) {
+    switch (choose(n)) {
+      case 0: gen_rand_blank();gen_num(); gen_rand_blank();depth--;break;
+      case 1: gen_rand_blank();gen('('); gen_rand_expr(); gen_rand_blank();gen(')'); gen_rand_blank();depth--;break;
+      default: gen_rand_blank();gen_rand_expr(); gen_rand_op(); gen_rand_expr(); gen_rand_blank();depth--;break;
+    }
 }
 
 int main(int argc, char *argv[]) {
@@ -44,23 +87,24 @@ int main(int argc, char *argv[]) {
   }
   int i;
   for (i = 0; i < loop; i ++) {
+    buf[0] = '\0';//静态变量
     gen_rand_expr();
 
-    sprintf(code_buf, code_format, buf);
+    sprintf(code_buf, code_format, buf);//buf-->code_buf
 
     FILE *fp = fopen("/tmp/.code.c", "w");
     assert(fp != NULL);
-    fputs(code_buf, fp);
+    fputs(code_buf, fp);//code_buf-->fp
     fclose(fp);
 
-    int ret = system("gcc /tmp/.code.c -o /tmp/.expr");
+    int ret = system("gcc /tmp/.code.c -Wall -Werror -o /tmp/.expr");//return 0 if success
     if (ret != 0) continue;
 
     fp = popen("/tmp/.expr", "r");
     assert(fp != NULL);
 
     int result;
-    ret = fscanf(fp, "%d", &result);
+    ret = fscanf(fp, "%d", &result); 
     pclose(fp);
 
     printf("%u %s\n", result, buf);
