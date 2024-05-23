@@ -17,7 +17,14 @@
 #define __SDB_H__
 
 #include <common.h>
+#include <isa.h>
 
 word_t expr(char *e, bool *success);
+void new_wp(char *args);
+void free_wp(char *args);
+void display_watchpoint();
+bool inspect_watchpoint();
+bool new_bp(char *args);
+
 
 #endif
