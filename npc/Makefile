@@ -1,3 +1,12 @@
+TOPNAME = Top
+
+VERILATOR = verilator
+
+VERILATOR_CFLAGS += --cc --exe --build --trace \
+					-O3 --x-assign fast --x-initial fast --noassert
+
+VERILATOR_INPUT = generated/Top.sv sim/main.cc sim/sim.cc
+
 BUILD_DIR = ./build
 
 PRJ = playground
@@ -26,6 +35,12 @@ clean:
 
 sim:
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
-	@echo "Write this Makefile by yourself."
+	@rm -rf logs 
+	@rm -rf $(OBJ_DIR)
+	@echo "--------VERILATE & COMPILE(BUILD)--------"
+	@$(VERILATOR) $(VERILATOR_CFLAGS) $(VERILATOR_INPUT) 
+	@echo "--------DONE------------"
+	$(BIN)
 
 -include ../Makefile
+
