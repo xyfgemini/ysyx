@@ -33,6 +33,10 @@ static bool g_print_step = false;
 void device_update();
 bool inspect_watchpoint();
 
+#ifdef CONFIG_ITRACE
+  static int num = 0;
+  static char ringbuf[100][128];
+#endif
 
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
@@ -77,8 +81,11 @@ static void exec_once(Decode *s, vaddr_t pc) {
 #else
   p[0] = '\0'; // the upstream llvm does not support loongarch32r
 #endif
+  //PC 二进制 反汇编
+  strcpy(ringbuf[num++],  );
 #endif
 }
+
 
 static void execute(uint64_t n) {
   Decode s;
@@ -126,7 +133,13 @@ void cpu_exec(uint64_t n) {
   switch (nemu_state.state) {
     case NEMU_RUNNING: nemu_state.state = NEMU_STOP; break;
 
-    case NEMU_END: case NEMU_ABORT:
+    case NEMU_ABORT: 
+      for(int i=0;i<num;i++) {
+        if(i==num-1) {printf("==>%s",ringbuf[i]);break;}
+        printf("%s",ringbuf[i]);
+      }
+
+    case NEMU_END: 
       Log("nemu: %s at pc = " FMT_WORD,
           (nemu_state.state == NEMU_ABORT ? ANSI_FMT("ABORT", ANSI_FG_RED) :
            (nemu_state.halt_ret == 0 ? ANSI_FMT("HIT GOOD TRAP", ANSI_FG_GREEN) :

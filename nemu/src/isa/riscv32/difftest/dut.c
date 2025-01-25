@@ -18,8 +18,19 @@
 #include "../local-include/reg.h"
 
 bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc) {
-  return false;
+  if(ref_r->pc != cpu.pc) {
+    printf("nemu:0x%08x | spike:0x%08x\n",cpu.pc,ref_r->pc);
+    return false;
+  }
+  for(int i = 0;i < RISCV_GPR_NUM;i++){
+    if(ref_r->gpr[i] != gpr(i)) {
+      printf("nemu:%u | spike:%u\n",gpr(i),ref_r->gpr[i]); 
+      return false;
+    }
+  }
+  return true;
 }
+
 
 void isa_difftest_attach() {
 }
