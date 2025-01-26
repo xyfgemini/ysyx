@@ -1,55 +1,42 @@
 #include "trace.h"
 
-#define BUF_LEN 128
+#define BUF_SIZE 20
+#define BUF_LEN 128 
 
-static char iringbuf[BUF_LEN];
+static char *iringbuf[BUF_LEN];
 static char *iringbuf_head = NULL;
-static char *iringbuf_tail = iringbuf_head + BUF_LEN -1 ;
+static char *iringbuf_tail = NULL ;
+static char *iringbuf_curr = NULL;
 
 
-void itrace() {
-    iringbuf_head = malloc();
+void iringbuf(char *logbuf) {
+    iringbuf_head = malloc(BUF_SIZE * BUF_LEN);
 
-   
-    free();
+    if(iringbuf_head == NULL) assert(0);
 
-}
+    iringbuf_tail = iringbuf_head + BUF_SIZE * BUF_LEN - 1;
 
+    iringbuf_curr = iringbuf_head;
 
+    strcpy(iringbuf_head,logbuf);
 
-    cb->buffer = malloc(capacity * sz);
-    cb->buffer_end = (char *)cb->buffer + capacity * sz;
-    cb->capacity = capacity;
-    cb->count = 0;
-    cb->sz = sz;
-    cb->head = cb->buffer;
-    cb->tail = cb->buffer;
-    free(cb->buffer);
+    iringbuf_curr += iringbuf_head;
 
-
-void cb_push_back(circular_buffer *cb, const void *item)
-{
-    if(cb->count == cb->capacity){
-        // handle error
+    if(iringbuf_curr >= iringbuf_tail) {
+        iringbuf_curr = iringbuf_head;
     }
-    memcpy(cb->head, item, cb->sz);
-    cb->head = (char*)cb->head + cb->sz;
-    if(cb->head == cb->buffer_end)
-        cb->head = cb->buffer;
-    cb->count++;
+    free(iringbuf_head);
 }
 
-void cb_pop_front(circular_buffer *cb, void *item)
-{
-    if(cb->count == 0){
-        // handle error
-    }
-    memcpy(item, cb->tail, cb->sz);
-    cb->tail = (char*)cb->tail + cb->sz;
-    if(cb->tail == cb->buffer_end)
-        cb->tail = cb->buffer;
-    cb->count--;
+void itrace_display(char *logbuf) { 
+    if()  {
+        Log("-->%s",logbuf);
+    } else {
+        Log("%s",logbuf);
+    } 
 }
+
+
 
 void mtrace() {
 
@@ -61,5 +48,5 @@ void ftrace() {
 }
 
 void dtrace() {
-    
+
 }
