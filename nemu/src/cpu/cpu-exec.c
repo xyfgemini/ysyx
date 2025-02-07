@@ -17,7 +17,7 @@
 #include <cpu/decode.h>
 #include <cpu/difftest.h>
 #include <locale.h>
-#include <../monitor/trace/trace.h>
+#include "../monitor/trace/trace.h"
 
 /* The assembly code of instructions executed is only output to the screen
  * when the number of instructions executed is less than this value.
@@ -36,12 +36,14 @@ bool inspect_watchpoint();
 
 
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
+  //printf("%s\n",_this->logbuf);
+
 #ifdef CONFIG_ITRACE_COND
   if (ITRACE_COND) { log_write("%s\n", _this->logbuf); }
 #endif
 
 #ifdef CONFIG_IRINGBUF
-  iringbuf(_this->logbuf);
+  iringbuf_w(_this->logbuf);
 #endif 
 
 #ifdef CONFIG_WATCHPOINT
@@ -134,7 +136,6 @@ void cpu_exec(uint64_t n) {
 
     case NEMU_END: case NEMU_ABORT: 
       itrace_display();
-      mtrace_display
 
       Log("nemu: %s at pc = " FMT_WORD,
           (nemu_state.state == NEMU_ABORT ? ANSI_FMT("ABORT", ANSI_FG_RED) :

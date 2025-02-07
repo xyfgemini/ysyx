@@ -153,13 +153,13 @@ config ITRACE_COND
 
 config IRINGBUF
   depends on ITRACE
+  bool "Enable iringbuf"
   default y
 
 config MTRACE
   depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPRETER
   bool "Enable memory tracer"
   default y
-
 
 config DIFFTEST
   depends on TARGET_NATIVE_ELF
