@@ -7,10 +7,19 @@
 #include <elf.h>
 #include <debug.h>
 
-void iringbuf_w(char *);
+void iringbuf_w(char*);
 
 void itrace_display();
 
-void ftrace_init(char *);
+static bool ftrace_is_Elf_32(FILE*); 
+
+static char *ftrace_get_func_name(word_t);
+
+void ftrace_init(char*);
+
+void ftrace_display(bool,bool,word_t,word_t);
+
+void ftrace_free();
+
 
 #endif

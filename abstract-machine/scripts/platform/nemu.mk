@@ -13,8 +13,7 @@ LDFLAGS   += -T $(AM_HOME)/scripts/linker.ld \
 LDFLAGS   += --gc-sections -e _start
 
 NEMUFLAGS += -l $(shell dirname $(IMAGE).elf)/nemu-log.txt 
-# -b --> batch mode
-NEMUFLAGS += -b
+NEMUFLAGS += -b   # -b --> batch mode
 NEMUFLAGS += -e $(IMAGE).elf
 
 
