@@ -7,7 +7,6 @@ static char **iringbuf_end = iringbuf + BUF_LEN - 1;
 static char **iringbuf_head = NULL;
 static char **iringbuf_curr = NULL;
 
-
 // 执行一条指令写入缓冲区
 void iringbuf_w(char *logbuf) {
     if(iringbuf_head == NULL) {
@@ -36,6 +35,10 @@ void itrace_display() {
         }
         iringbuf_head++;
     }
+}
+
+void mtrace_display() {
+    
 }
 
 //存储ELF符号表中函数名
@@ -127,9 +130,12 @@ void ftrace_init(const char *elf) {
                 func_name_arr[offset] = (char *)malloc(sizeof(char) * 512);
             }
             strcpy(func_name_arr[offset],func_name);
+#ifdef CONFIG_FTRACE_ELF
+        printf("[ftrace] sym addr: FMT_WORD",value);
+        printf("[ftrace] func name: %s",func_name);
+#endif 
         }
     }
-
     fclose(fp);
 }
 
@@ -138,7 +144,8 @@ static char buf_former[512];
 static char buf_latter[512];
 
 void ftrace_display(inst_call,inst_ret,pc,dnpc) {
-    if(ftrace_get_func_name(dnpc) == "\0") {
+    //递归调用
+    if(inst_call && strcmp(ftrace_get_func_name(dnpc),"\0")) {
         return ;
     }
 
@@ -150,15 +157,16 @@ void ftrace_display(inst_call,inst_ret,pc,dnpc) {
         if(*inst_func_name_head == NULL) {
             *inst_func_name_head = (char *)malloc(512);
         }
-        strcpy(*inst_func_name_head,ftrace_get_func_name);
+        strcpy(*inst_func_name_head,ftrace_get_func_name(dnpc));
         sprintf(buf_latter,"call [%s@0x%08" PRIX32 "]\n",*inst_func_name_head,(word_t)dnpc);
         inst_func_name_head++;
         depth++;
     }
 
+    //
     if(inst_ret) {
-        if() {
-            
+        if(inst_func_name_head == inst_func_name_arr) { 
+            return;
         } else {
             inst_func_name_head--;
             depth--;
@@ -168,6 +176,11 @@ void ftrace_display(inst_call,inst_ret,pc,dnpc) {
 
     if(inst_call || inst_ret) {
         sprintf(buf_total,"%s %s",buf_former,buf_latter);
+        if(*ftrace_info_head == NULL) {
+            *ftrace_info_head = (char *)malloc(1024);
+        }
+        strcpy(*ftrace_info_head,buf_total);
+        ftrace_info_head++;
     }
 }
 
