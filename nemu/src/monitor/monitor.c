@@ -70,12 +70,12 @@ static long load_img() {
 static int parse_args(int argc, char *argv[]) {
   
   const struct option table[] = {
-    {"batch"    , no_argument      , NULL, 'b'}, //no:0 required:1 optional:2
+    {"batch"    , no_argument      , NULL, 'b'},
+    {"help"     , no_argument      , NULL, 'h'}, //no:0 required:1 optional:2
     {"log"      , required_argument, NULL, 'l'}, //return value--->flag==NULL ? val : 0
     {"diff"     , required_argument, NULL, 'd'},
     {"port"     , required_argument, NULL, 'p'},
     {"elf"      , required_argument, NULL, 'e'},
-    {"help"     , no_argument      , NULL, 'h'},
     {0          , 0                , NULL,  0 },
   };
   int o;
@@ -84,16 +84,17 @@ static int parse_args(int argc, char *argv[]) {
                   const struct option *longopts, int *longindex);
   *  argc:命令行参数的个数 
   *  argv:命令行参数的具体内容
-  *  "-bhl:d:p:e:",短选项（-字母），:表示必须带有参数 | table: 长选项（--字母）
-  *  参数赋值给optargs，int *longindex = NULL;
+  *  optstring:"-bhl:d:p:e:" -b==--batch,:必须带有optarg 
+  *  longopts:长选项，参数是否需要
+  *  int *longindex = NULL;
   **/
   while ( (o = getopt_long(argc, argv, "-bhl:d:p:e:", table, NULL)) != -1) { //-1结束标志
     switch (o) {
       case 'b': sdb_set_batch_mode(); break;
-      case 'p': sscanf(optarg, "%d", &difftest_port); break;
       case 'l': log_file = optarg; break;
       case 'd': diff_so_file = optarg; break;
-      //case 'e': elf = ; break; //parse_args()传入elf文件
+      case 'p': sscanf(optarg, "%d", &difftest_port); break;
+      case 'e': elf_file = optarg; break;
       case 1: img_file = optarg; return 0;
       default:
         printf("Usage: %s [OPTION...] IMAGE [args]\n\n", argv[0]);
@@ -101,6 +102,7 @@ static int parse_args(int argc, char *argv[]) {
         printf("\t-l,--log=FILE           output log to FILE\n");
         printf("\t-d,--diff=REF_SO        run DiffTest with reference REF_SO\n");
         printf("\t-p,--port=PORT          run DiffTest with port PORT\n");
+        printf("\t-e.--elf=FILE           output elf to FILE\n");
         printf("\n");
         exit(0);
     }
@@ -138,6 +140,7 @@ void init_monitor(int argc, char *argv[]) {
   /* Initialize the simple debugger. */
   init_sdb();
 
+  /* Initialize the function tracer. */
   ftrace_init(elf_file);
 
 #ifndef CONFIG_ISA_loongarch32r

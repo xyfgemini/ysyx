@@ -37,8 +37,11 @@ void itrace_display() {
     }
 }
 
-void mtrace_display() {
-    
+void mtrace_display(word_t addr,word_t data) {
+    addr = CONFIG_MBASE + i * 4;
+    data = paddr_read(addr,4);
+    Log("[mtrace] addr:" FMT_WORD "data :" FMT_WORD "\n",addr,data);
+
 }
 
 //存储ELF符号表中函数名
@@ -81,10 +84,10 @@ static char *ftrace_get_func_name(word_t addr) {
 }
 
 
-void ftrace_init(const char *elf) {
-    FILE *fp = fopen("elf","r");
-    Assert(fp != NULL,"can not open '%s'",fp);
-    Assert(ftrace_is_Elf_32(fp),"'%s' is not 32bit type",fp);
+void ftrace_init(const char *elf_file) {
+    FILE *fp = fopen("elf_file","r");
+    Assert(fp,"can not open '%s'",elf_file);
+    Assert(ftrace_is_Elf_32(fp),"'%s' is not 32bit type",elf_file);
 
     //read elf header
     Elf32_Ehdr elf_header;
@@ -163,7 +166,7 @@ void ftrace_display(inst_call,inst_ret,pc,dnpc) {
         depth++;
     }
 
-    //
+
     if(inst_ret) {
         if(inst_func_name_head == inst_func_name_arr) { 
             return;
