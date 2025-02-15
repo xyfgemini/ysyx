@@ -139,14 +139,14 @@ void cpu_exec(uint64_t n) {
         itrace_display();
       #endif
       
-      #ifdef CONFIG_MTRACE
+      // #ifdef CONFIG_MTRACE
+      //   mtrace_display();
+      // #endif
 
-      #endif
-
-      #ifdef CONFIG_FTRACE
-        ftrace_display(inst_call,inst_ret,pc,dnpc);
-        ftrace_free();
-      #endif
+      // #ifdef CONFIG_FTRACE
+      //   ftrace_display(false,false,0,0);
+      //   ftrace_free();
+      // #endif
 
       Log("nemu: %s at pc = " FMT_WORD,
           (nemu_state.state == NEMU_ABORT ? ANSI_FMT("ABORT", ANSI_FG_RED) :

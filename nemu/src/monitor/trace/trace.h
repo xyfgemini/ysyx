@@ -6,14 +6,11 @@
 #include <stdlib.h>
 #include <elf.h>
 #include <debug.h>
+#include <memory/paddr.h>
 
 void iringbuf_w(char*);
 
 void itrace_display();
-
-static bool ftrace_is_Elf_32(FILE *); 
-
-static char *ftrace_get_func_name(word_t);
 
 void ftrace_init(const char*);
 

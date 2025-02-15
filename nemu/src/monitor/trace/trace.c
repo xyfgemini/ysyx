@@ -37,15 +37,14 @@ void itrace_display() {
     }
 }
 
-void mtrace_display(word_t addr,word_t data) {
-    addr = CONFIG_MBASE + i * 4;
-    data = paddr_read(addr,4);
-    Log("[mtrace] addr:" FMT_WORD "data :" FMT_WORD "\n",addr,data);
-
-}
+// void mtrace_display(word_t addr,word_t data) {
+//     addr = CONFIG_MBASE + i * 4;
+//     data = paddr_read(addr,4);
+//     Log("[mtrace] addr:" FMT_WORD "data :" FMT_WORD "\n",addr,data);
+// }
 
 //存储ELF符号表中函数名
-#define ARR_LEN (1024 * 1024)
+#define ARR_LEN (1024 * 1024 * 10)
 static char *func_name_arr[ARR_LEN];
 
 //存储call ret函数名称
@@ -57,6 +56,8 @@ static char **inst_func_name_head = inst_func_name_arr;
 static char *ftrace_info_arr[ARR_LEN];
 static char **ftrace_info_head = ftrace_info_arr;
 
+static bool ftrace_is_Elf_32(FILE *); 
+static char* ftrace_get_func_name(word_t);
 
 static bool ftrace_is_Elf_32(FILE *fp) {
     char buf[16];
@@ -67,7 +68,7 @@ static bool ftrace_is_Elf_32(FILE *fp) {
         return false;
     }
     //不是ELF32格式文件
-    if(buf[EI_CLASS] != ELFCLASS32) {
+    if(buf[0] != 0x7f || buf[1] != 'E' || buf[2] != 'L' || buf[3] != 'F' || buf[EI_CLASS] != ELFCLASS32) {
         return false;
     }
     return true;
@@ -85,25 +86,31 @@ static char *ftrace_get_func_name(word_t addr) {
 
 
 void ftrace_init(const char *elf_file) {
-    FILE *fp = fopen("elf_file","r");
-    Assert(fp,"can not open '%s'",elf_file);
-    Assert(ftrace_is_Elf_32(fp),"'%s' is not 32bit type",elf_file);
+    FILE *fp = fopen(elf_file,"rb");
+    Assert(fp,"Can not open '%s'",elf_file);
+    Assert(ftrace_is_Elf_32(fp),"'%s' is not Elf32 format",elf_file);
 
     //read elf header
     Elf32_Ehdr elf_header;
+    // printf("%d %ld\n",elf_header.e_ehsize,sizeof(elf_header));
     fseek(fp,0,SEEK_SET);
-    fread(&elf_header,1,elf_header.e_ehsize,fp);
+    int ret0 = fread(&elf_header,sizeof(elf_header),1,fp);
+    assert(ret0 == 1);
 
     //read elf section header
     //section descripter ---> struct array
-    //sizeof(Elf32_Shdr)==elf_header.e_shentsize
     Elf32_Shdr elf_section_header[elf_header.e_shnum];
     fseek(fp,elf_header.e_shoff,SEEK_SET);
-    fread(elf_section_header,elf_header.e_shentsize,elf_header.e_shnum,fp);
+    //printf("%d %d %ld\n",elf_header.e_shentsize,sizeof(Elf32_Shdr),elf_header.e_shnum);
+    //sizeof(Elf32_Shdr)==elf_header.e_shentsize
+    int ret1 = fread(elf_section_header,elf_header.e_shentsize,elf_header.e_shnum,fp);
+    // printf("%d %d\n",ret1,elf_header.e_shnum);
+    assert(ret1 == elf_header.e_shnum);
 
     //read elf_section_header-->.symtab .strtab
     Elf32_Shdr elf_section_sym;
     Elf32_Shdr elf_section_str;
+    //printf("%d %d\n",elf_section_sym.sh_size,elf_section_sym.sh_entsize);
     for(int i = 0;i < elf_header.e_shnum;i++) {
         if(elf_section_header[i].sh_type == SHT_SYMTAB) {
             memcpy(&elf_section_sym,&elf_section_header[i],sizeof(Elf32_Shdr));
@@ -116,15 +123,19 @@ void ftrace_init(const char *elf_file) {
     //read .symtab 
     Elf32_Sym elf_sym_arr[elf_section_sym.sh_size / elf_section_sym.sh_entsize];
     fseek(fp,elf_section_sym.sh_offset,SEEK_SET);
-    fread(&elf_sym_arr,1,elf_section_sym.sh_size,fp);
+    int ret2 = fread(elf_sym_arr,elf_section_sym.sh_size,1,fp);
+    assert(ret2 == 1);
 
     //read .strtab
     char elf_str_arr[elf_section_str.sh_size];
     fseek(fp,elf_section_str.sh_offset,SEEK_SET);
-    fread(&elf_str_arr,1,elf_section_str.sh_size,fp);
+    //printf("%d %ld\n",elf_section_str.sh_size,sizeof(elf_str_arr));
+    int ret3 = fread(elf_str_arr,elf_section_str.sh_size,1,fp);
+    assert(ret3 == 1);
 
     for(int j = 0;j < elf_section_sym.sh_size / elf_section_sym.sh_entsize;j++) {
-        if(elf_sym_arr[j].st_info == STT_FUNC) {
+        // printf("%d %d\n",elf_sym_arr[j].st_info,STT_FUNC);
+        if(ELF32_ST_TYPE(elf_sym_arr[j].st_info) == STT_FUNC) {
             Elf32_Addr value = elf_sym_arr[j].st_value; 
             Elf32_Word name = elf_sym_arr[j].st_name; //name属性-->字符串在字符串表中的偏移量
             Elf32_Word offset = value - elf_header.e_entry;
@@ -134,9 +145,9 @@ void ftrace_init(const char *elf_file) {
             }
             strcpy(func_name_arr[offset],func_name);
 #ifdef CONFIG_FTRACE_ELF
-        printf("[ftrace] sym addr: FMT_WORD",value);
-        printf("[ftrace] func name: %s",func_name);
-#endif 
+        Log("[ftrace] symbol address:" FMT_WORD "\n" ,value);
+        Log("[ftrace] function name: %s\n",func_name);
+#endif
         }
     }
     fclose(fp);
@@ -146,7 +157,7 @@ static char buf_total[1024];
 static char buf_former[512];
 static char buf_latter[512];
 
-void ftrace_display(inst_call,inst_ret,pc,dnpc) {
+void ftrace_display(bool inst_call,bool inst_ret,word_t pc,word_t dnpc) {
     //递归调用
     if(inst_call && strcmp(ftrace_get_func_name(dnpc),"\0")) {
         return ;
@@ -165,7 +176,6 @@ void ftrace_display(inst_call,inst_ret,pc,dnpc) {
         inst_func_name_head++;
         depth++;
     }
-
 
     if(inst_ret) {
         if(inst_func_name_head == inst_func_name_arr) { 

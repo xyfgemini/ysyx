@@ -15,6 +15,7 @@
 
 #include <isa.h>
 #include <memory/paddr.h>
+#include "./trace/trace.h"
 
 void init_rand();
 void init_log(const char *log_file);
@@ -84,7 +85,7 @@ static int parse_args(int argc, char *argv[]) {
                   const struct option *longopts, int *longindex);
   *  argc:命令行参数的个数 
   *  argv:命令行参数的具体内容
-  *  optstring:"-bhl:d:p:e:" -b==--batch,:必须带有optarg 
+  *  optstring:"-bhl:d:p:e:"-->:必须带有optarg(-e optarg | --elf=optarg)
   *  longopts:长选项，参数是否需要
   *  int *longindex = NULL;
   **/
@@ -113,6 +114,7 @@ static int parse_args(int argc, char *argv[]) {
 void init_monitor(int argc, char *argv[]) {
   /* Perform some global initialization. */
 
+
   /* Parse arguments. */
   parse_args(argc, argv);
 
@@ -136,12 +138,13 @@ void init_monitor(int argc, char *argv[]) {
 
   /* Initialize differential testing. */
   init_difftest(diff_so_file, img_size, difftest_port);
+  
+  /* Initialize the function tracer. */
+  ftrace_init(elf_file);
 
   /* Initialize the simple debugger. */
   init_sdb();
 
-  /* Initialize the function tracer. */
-  ftrace_init(elf_file);
 
 #ifndef CONFIG_ISA_loongarch32r
   IFDEF(CONFIG_ITRACE, init_disasm(
