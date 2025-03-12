@@ -5,7 +5,46 @@
 
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
 
+char *out_tmp = NULL;
+char num_arr[256];
+char *num_arr_ptr = NULL;
+
+void PrintNum(int d) {
+    if(d == 0) {
+        return;
+    } else {
+        PrintNum(d/10);
+        //trick:以字符串开头的数组形式的表达式，它会根据数组下表，找到对应字符作为输出
+        char ch = "0123456789"[d % 10];
+        *num_arr_ptr = ch;
+        num_arr_ptr++;
+    }
+}
+
+void dec_display(int d) {
+    if(d == 0) {
+       *out_tmp = '\0';
+       out_tmp ++; 
+    } else if(d < 0) {
+        *out_tmp = '-';
+        out_tmp ++;
+        d = -d;
+    } else {
+        memset(num_arr,'\0',256);
+        num_arr_ptr = num_arr;
+        PrintNum(d);
+        memcpy(out_tmp,num_arr,strlen(num_arr));
+        out_tmp += strlen(num_arr);
+    }
+}
+
+void char_display(char *s) {
+    memcpy(out_tmp,s,strlen(s));
+    out_tmp += strlen(s);
+}
+
 int printf(const char *fmt, ...) {
+    putch(*fmt);
     return 0;
 
 }
@@ -17,50 +56,26 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
 
 int sprintf(char *out, const char *fmt, ...) {
     va_list args;
-    char ch;
-    char *buf;
-    char buf_tmp[512];
-    char *string_tmp;
-    int int_tmp;
-    int count = 0;
-    int length = 0;
-
     va_start(args,fmt);
-
-    while(ch = *fmt++) {
-        *buf++ = ch;
-        ++count;
-        //%s %d
+    char ch;
+    out_tmp = out;
+    while((ch = *fmt) != '\0') {
         if(ch == '%') {
-            *buf++ = ch;
-            ++count;
-            switch(ch = *fmt++) {
-                case 's':  
-                    string_tmp = va_arg(args,char*); 
-                    length = strlen(string_tmp); 
-                    buf = string_tmp;
-                    buf += length; 
-                    count += length;
-                    break;
-
-                case 'd':  
-                    int_tmp = va_arg(args,int); 
-                    itoa(int_tmp,buf_tmp,10);
-                    length = strlen(buf_tmp);
-                    buf = buf_tmp;
-                    buf += length;
-                    count += length;
-                    break;
-
-                default:  
-                    break;
+            fmt++;
+            switch(*fmt) {
+                case 's': char_display(va_arg(args,char*)); break;
+                case 'd': dec_display(va_arg(args,int)); break;
+                default: break;
             }
-        }  
+        } else {
+            *out_tmp = ch;
+            out_tmp ++;
+        }
+        fmt++;
     }
-    *buf = '\0';
+    out_tmp = '\0';
     va_end(args);
-    out = buf;
-    return count;
+    return 0;
 }
 
 
