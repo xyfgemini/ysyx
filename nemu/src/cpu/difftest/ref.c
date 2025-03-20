@@ -40,6 +40,7 @@ __EXPORT void difftest_regcpy(void *dut, bool direction) {
           tmp->gpr[i] = cpu.gpr[i];
       }
           tmp->pc = cpu.pc;    
+          
   }
 }
 
