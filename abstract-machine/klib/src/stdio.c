@@ -44,6 +44,10 @@ void char_display(char *s) {
 }
 
 int printf(const char *fmt, ...) {
+    
+    
+    
+    
     putch(*fmt);
     return 0;
 

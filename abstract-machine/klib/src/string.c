@@ -83,6 +83,7 @@ void *memset(void *s, int c, size_t n) {
   while(*tmp!='\0' && n!=0) {
     *(tmp++) = c;
     n--;
+    
   }
   return s;
 }
