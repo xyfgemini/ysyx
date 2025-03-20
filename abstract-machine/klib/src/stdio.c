@@ -43,14 +43,24 @@ void char_display(char *s) {
     out_tmp += strlen(s);
 }
 
-int printf(const char *fmt, ...) {
-    
-    
-    
-    
-    putch(*fmt);
-    return 0;
+// void printf_str(char *s) {
+//     putstr(s);
+// }
 
+
+int printf(const char *fmt, ...) {
+    va_list args;
+    va_start(args,fmt);
+    while(*fmt != '\0') {
+        if(*fmt == '%') {
+            putstr(va_arg(args,char*));
+        } else {
+            putch(*fmt);
+        }
+        fmt++;
+    }
+    va_end(args);
+    return 0;
 }
 
 int vsprintf(char *out, const char *fmt, va_list ap) {
