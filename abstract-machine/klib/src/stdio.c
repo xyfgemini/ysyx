@@ -43,9 +43,6 @@ void char_display(char *s) {
     out_tmp += strlen(s);
 }
 
-// void printf_str(char *s) {
-//     putstr(s);
-// }
 
 
 int printf(const char *fmt, ...) {
