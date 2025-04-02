@@ -6,6 +6,7 @@
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
 
 char *out_tmp = NULL;
+
 char num_arr[256];
 char *num_arr_ptr = NULL;
 
@@ -46,17 +47,17 @@ void char_display(char *s) {
 
 
 int printf(const char *fmt, ...) {
-    va_list args;
-    va_start(args,fmt);
-    while(*fmt != '\0') {
-        if(*fmt == '%') {
-            putstr(va_arg(args,char*));
-        } else {
-            putch(*fmt);
-        }
-        fmt++;
-    }
-    va_end(args);
+    // va_list args;
+    // va_start(args,fmt);
+    // while(*fmt != '\0') {
+    //     if(*fmt == '%') {
+    //         putstr(va_arg(args,char*));
+    //     } else {
+    //         putch(*fmt);
+    //     }
+    //     fmt++;
+    // }
+    // va_end(args);
     return 0;
 }
 
@@ -69,6 +70,8 @@ int sprintf(char *out, const char *fmt, ...) {
     va_list args;
     va_start(args,fmt);
     char ch;
+    //
+    memset(out,'\0',128);
     out_tmp = out;
     while((ch = *fmt) != '\0') {
         if(ch == '%') {
