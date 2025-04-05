@@ -198,7 +198,7 @@ void ftrace_display(bool inst_call,bool inst_ret,word_t pc,word_t dnpc) {
 }
 
 
-void ftrace_free() {
+void ftrace_free()  {
     for(int i=0;i < ARR_LEN;i++) {
         if(func_name_arr[i] != NULL) {
             free(func_name_arr[i]);
