@@ -5,8 +5,8 @@
 
 void __am_gpu_init() {
   int i;
-  int w = io_read(AM_GPU_CONFIG).width / sizeof(uint32_t) ;  
-  int h = io_read(AM_GPU_CONFIG).height / sizeof(uint32_t) ; 
+  int w = 0 ;  
+  int h = 0 ; 
   uint32_t *fb = (uint32_t *)(uintptr_t)FB_ADDR;
   for (i = 0; i < w * h; i ++) fb[i] = i;
   outl(SYNC_ADDR, 1);
@@ -16,8 +16,8 @@ void __am_gpu_config(AM_GPU_CONFIG_T *cfg) {
   *cfg = (AM_GPU_CONFIG_T) {
     .present = true,
     .has_accel = false,
-    .width = io_read(AM_GPU_CONFIG).width / sizeof(uint32_t), 
-    .height = io_read(AM_GPU_CONFIG).height / sizeof(uint32_t),
+    .width = 0, 
+    .height = 0,
     .vmemsz = 0
   };
 }
