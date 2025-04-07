@@ -6,7 +6,6 @@ static uint64_t time_init = 0;
 void __am_timer_init() {
 }
 
-//todo
 void __am_timer_uptime(AM_TIMER_UPTIME_T *uptime) {
   uint64_t time_high = inl(RTC_ADDR+4);
   uint64_t time_low = inl(RTC_ADDR);
