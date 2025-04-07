@@ -29,6 +29,7 @@ uint8_t* new_space(int size) {
   size = (size + (PAGE_SIZE - 1)) & ~PAGE_MASK;
   p_space += size;
   assert(p_space - io_space < IO_SPACE_MAX);
+  printf("%p\n",p);
   return p;
 }
 
@@ -48,6 +49,7 @@ static void invoke_callback(io_callback_t c, paddr_t offset, int len, bool is_wr
 
 void init_map() {
   io_space = malloc(IO_SPACE_MAX);
+  // printf("%p\n",io_space);
   assert(io_space);
   p_space = io_space;
 }
