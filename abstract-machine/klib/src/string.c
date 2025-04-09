@@ -100,7 +100,32 @@ void *memmove(void *dst, const void *src, size_t n){
   for(i=0;i<n;i++){
     *(d+i) = temp[i];
   }
-  return dst;
+  return d;
+  // void *pTmp = NULL;
+	
+	// if(NULL == dst || NULL == src || n <= 0)
+	// {
+	// 	return NULL;
+	// }	
+  //   pTmp = dst;
+	// if(src >= dst)
+	// {
+		
+  //       while(n > 0)
+  //       {
+	// 		*(char *)dst++ = *(char *)src++;
+	// 		n--;
+	// 	}
+	// }
+	// else
+	// {
+	// 	while(n > 0)
+	// 	{
+	// 		*((char *)dst + n - 1) = *((char *)src + n -1);
+	// 		n--;
+	// 	}
+	// }
+	// return pTmp;
 }
 
 void *memcpy(void *out, const void *in, size_t n) {

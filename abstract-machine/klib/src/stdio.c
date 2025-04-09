@@ -69,6 +69,8 @@ int sprintf(char *out, const char *fmt, ...) {
     return 0;
 }
 
+/***********************************************************************/
+
 void PrintNum(unsigned int d,int base) {
      if(d == 0) {
         return;
@@ -78,6 +80,7 @@ void PrintNum(unsigned int d,int base) {
         putch(ch);
     }    
 }
+
 
 int printf(const char *fmt, ...) {
     va_list args;
